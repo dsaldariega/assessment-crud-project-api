@@ -45,7 +45,7 @@ const signin = async (req, res) => {
         expiresIn: "1h",
       }
     );
-    res.json({ token });
+    res.json({ token, user: validUser.username });
   } catch (error) {
     console.log(error);
   }

@@ -2,6 +2,8 @@ const Post = require("../models/postModel");
 
 const fetchAllPost = async (req, res) => {
   try {
+    const posts = await Post.find({});
+    return res.status(200).json(posts);
   } catch (error) {
     console.log(error.message);
     res.status(500).send({ message: error });
@@ -24,6 +26,7 @@ const createPost = async (req, res) => {
     const newPost = {
       title: req.body.title,
       body: req.body.body,
+      user: req.body.user,
     };
     const post = await Post.create(newPost);
     return res.status(201).send(post);
@@ -34,18 +37,15 @@ const createPost = async (req, res) => {
 
 const updatePost = async (req, res) => {
   try {
-    // if (!req.body.block || !req.body.lot) {
-    //   return res.status(400).send({
-    //     message: "Send all required fields: block, lot",
-    //   });
-    // }
     const { id } = req.params;
-    const result = await Post.findByIdAndUpdate(id, req.body);
+    const updatedPost = await Post.findByIdAndUpdate(id, req.body, {
+      new: true,
+    });
 
-    if (!result) {
+    if (!updatedPost) {
       return res.status(404).json({ message: "Post not found" });
     }
-    return res.status(200).send({ message: "Post updated successfully" });
+    return res.status(200).json(updatedPost);
   } catch (error) {
     console.log(error.message);
     res.status(500).send({ message: error.message });

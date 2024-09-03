@@ -10,7 +10,27 @@ const app = express();
 const PORT = process.env.PORT || 5000; // Define PORT variable
 const dbURL = process.env.DB_URL;
 
-// Middleware for parsing request body
+const allowCors = (fn) => async (req, res) => {
+  res.setHeader("Access-Control-Allow-Credentials", true);
+  // Use env variable for production or allow all
+  // res.setHeader("Access-Control-Allow-Origin", process.env.URL_PROD || "*");
+  res.setHeader("Access-Control-Allow-Origin", process.env.URL_LOCAL || "*");
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET,OPTIONS,PATCH,DELETE,POST,PUT"
+  );
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version"
+  );
+
+  if (req.method === "OPTIONS") {
+    res.status(200).end();
+    return;
+  }
+  return await fn(req, res);
+};
+
 app.use(express.json());
 // Local
 // const corsOptions = {
@@ -20,32 +40,18 @@ app.use(express.json());
 // };
 // app.use(cors(corsOptions));
 
-const allowCors = (fn) => async (req, res) => {
-  res.setHeader("Access-Control-Allow-Credentials", true);
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  // another common pattern
-  // res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "GET,OPTIONS,PATCH,DELETE,POST,PUT"
-  );
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version"
-  );
-  if (req.method === "OPTIONS") {
-    res.status(200).end();
-    return;
-  }
-  return await fn(req, res);
-};
+// Define a wrapper for routes to include CORS
+const wrapWithCors = (route) =>
+  allowCors((req, res, next) => route(req, res, next));
 
-const handler = (req, res) => {
-  const d = new Date();
-  res.end(d.toString());
-};
-
-module.exports = allowCors(handler);
+// Example usage: applying CORS middleware to specific route handlers
+app.get(
+  "/",
+  wrapWithCors((req, res) => {
+    console.log(req);
+    return res.status(234).send("Server is working!");
+  })
+);
 
 app.use("/posts", postRoute);
 app.use("/user/auth", userRoute);

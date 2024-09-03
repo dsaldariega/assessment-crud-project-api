@@ -13,10 +13,7 @@ const allowCors = (fn) => async (req, res) => {
   res.setHeader("Access-Control-Allow-Credentials", true);
   // Use env variable for production or allow all
   // res.setHeader("Access-Control-Allow-Origin", process.env.URL_PROD || "*");
-  res.setHeader(
-    "Access-Control-Allow-Origin",
-    process.env.URL_LOCAL || process.env.URL_PROD || "*"
-  );
+  res.setHeader("Access-Control-Allow-Origin", process.env.URL_PROD || "*");
   res.setHeader(
     "Access-Control-Allow-Methods",
     "GET,OPTIONS,PATCH,DELETE,POST,PUT"
